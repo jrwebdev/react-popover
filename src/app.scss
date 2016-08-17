@@ -1,0 +1,33 @@
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.wrapper {
+  box-sizing: border-box;
+  display: flex;
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 50px;
+}
+
+.left-sidebar,
+.main,
+.right-sidebar {
+  height: 100%;
+}
+
+.main {
+  flex: 1;
+}
+
+.left-sidebar,
+.right-sidebar {
+  background-color: #EEE;
+  width: 250px;
+  padding: 20px;
+}
