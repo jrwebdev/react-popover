@@ -7,7 +7,9 @@
     "test:ci": "jest --coverage",
     "start": "webpack-dev-server --content-base=src/",
     "prebuild": "rimraf dist",
-    "build": "cross-env NODE_ENV=production webpack -p"
+    "build": "cross-env NODE_ENV=production webpack -p",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
   },
   "jest": {
     "automock": false,
