@@ -1,23 +1,11 @@
 import React from 'react';
 import Portal from 'react-portal';
 
-// TODO: Allow dynamic sizes
 const popoverWidth = 350;
 const popoverHeight = 150;
 
-const baseButtonStyles = {
-  marginBottom: '500px',
-  backgroundColor: '#DDD',
-  borderRadius: '3px',
-  padding: '5px',
-  cursor: 'pointer',
-  textAlign: 'center'
-};
-
 const basePopoverStyles = {
   position: 'absolute',
-  height: popoverHeight,
-  width: popoverWidth,
   backgroundColor: '#FFF',
   boxShadow: '0 0 3px rgba(0,0,0,.5)'
 };
@@ -49,18 +37,18 @@ const getPosRelativeToAncestor = (target, ancestor, pos = {top: target.offsetTop
   return getPosRelativeToAncestor(parentNode, ancestor, pos);
 };
 
-const getPopoverPos = targetBounds => {
+const getPopoverPos = (anchorBounds, popoverHeight, popoverWidth) => {
 
   const viewportHeight = window.innerHeight;
   const viewportWidth = window.innerWidth;
 
-  const spaceAbove = targetBounds.top;
-  const spaceBelow = viewportHeight - targetBounds.bottom;
-  const spaceLeft = targetBounds.left;
-  const spaceRight = viewportWidth - targetBounds.right;
+  const spaceAbove = anchorBounds.top;
+  const spaceBelow = viewportHeight - anchorBounds.bottom;
+  const spaceLeft = anchorBounds.left;
+  const spaceRight = viewportWidth - anchorBounds.right;
 
-  const top = spaceAbove > spaceBelow ? targetBounds.top - popoverHeight : targetBounds.bottom;
-  const left = spaceLeft > spaceRight ? targetBounds.right - popoverWidth : targetBounds.left;
+  const top = spaceAbove > spaceBelow ? anchorBounds.top - popoverHeight : anchorBounds.bottom;
+  const left = spaceLeft > spaceRight ? anchorBounds.right - popoverWidth : anchorBounds.left;
 
   return {
     top,
@@ -68,12 +56,12 @@ const getPopoverPos = targetBounds => {
   }
 };
 
-const isInView = (target, scrollableAncestor) => {
+const isInView = (anchor, scrollableAncestor) => {
 
-  const targetPos = getPosRelativeToAncestor(target, scrollableAncestor);
-  const targetBounds = {
-    top: targetPos.top,
-    bottom: targetPos.top + target.offsetHeight
+  const anchorPos = getPosRelativeToAncestor(anchor, scrollableAncestor);
+  const anchorBounds = {
+    top: anchorPos.top,
+    bottom: anchorPos.top + anchor.offsetHeight
   };
 
   // TODO: Left/right (horizontal scrolling)
@@ -82,13 +70,13 @@ const isInView = (target, scrollableAncestor) => {
     bottom: scrollableAncestor.scrollTop + scrollableAncestor.offsetHeight
   };
 
-  return targetBounds.bottom > scrollBounds.top && targetBounds.top < scrollBounds.bottom;
+  return anchorBounds.bottom > scrollBounds.top && anchorBounds.top < scrollBounds.bottom;
 };
 
 // TODO: Bind element reposition/resize
 // TODO: Bind close on click off popover
 
-class PopoverButton extends React.Component {
+class Popover extends React.Component {
 
   constructor() {
     super();
@@ -96,7 +84,8 @@ class PopoverButton extends React.Component {
       isInView: true
     };
 
-    this.initialiseButton = this.initialiseButton.bind(this);
+    this.initialise = this.initialise.bind(this);
+    this.setPopover = this.setPopover.bind(this);
     this.togglePopover = this.togglePopover.bind(this);
     this.positionPopover = this.positionPopover.bind(this);
   }
@@ -108,11 +97,15 @@ class PopoverButton extends React.Component {
     window.removeEventListener(this.windowResizeListener);
   }
 
-  initialiseButton(ref) {
-    this.button = ref;
+  initialise(ref) {
+    this.anchor = ref;
     this.scrollableAncestor = getScrollableAncestor(ref.parentNode);
     this.windowResizeListener = window.addEventListener('resize', this.positionPopover);
     this.scrollListener = this.scrollableAncestor.addEventListener('scroll', this.positionPopover);
+  }
+
+  setPopover(ref) {
+    this.popover = ref;
   }
 
   togglePopover() {
@@ -126,10 +119,10 @@ class PopoverButton extends React.Component {
 
   positionPopover() {
     if (this.state.isOpen) {
-      const targetBounds = this.button.getBoundingClientRect();
-      const popoverPos = getPopoverPos(targetBounds);
+      const anchorBounds = this.anchor.getBoundingClientRect();
+      const popoverPos = getPopoverPos(anchorBounds, this.popover.offsetHeight, this.popover.offsetWidth);
       this.setState({
-        isInView: isInView(this.button, this.scrollableAncestor),
+        isInView: isInView(this.anchor, this.scrollableAncestor),
         popoverTop: popoverPos.top,
         popoverLeft: popoverPos.left
       });
@@ -138,21 +131,29 @@ class PopoverButton extends React.Component {
 
   render() {
     return (
-      <div style={baseButtonStyles} onClick={this.togglePopover} ref={this.initialiseButton}>
-        Toggle Popover
+      <div>
+        <span onClick={this.togglePopover} ref={this.initialise}>{this.props.anchor}</span>
         <Portal isOpened={this.state.isOpen}>
           <div
+            ref={this.setPopover}
             style={{
               ...basePopoverStyles,
               top: this.state.popoverTop,
               left: this.state.popoverLeft,
               visibility: this.state.isInView ? 'visible' : 'hidden'
             }}
-          />
+          >
+            {this.props.children}
+          </div>
         </Portal>
       </div>
     )
   }
 }
 
-export default PopoverButton;
+Popover.proptypes = {
+  anchor: React.PropTypes.element,
+  children: React.PropTypes.element
+}
+
+export default Popover;
