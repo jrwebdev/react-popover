@@ -1,11 +1,12 @@
 import React from 'react';
 import Portal from 'react-portal';
 
+// TODO: Allow dynamic sizes
 const popoverWidth = 350;
 const popoverHeight = 150;
 
 const baseButtonStyles = {
-  marginBottom: '350px',
+  marginBottom: '500px',
   backgroundColor: '#DDD',
   borderRadius: '3px',
   padding: '5px',
@@ -19,6 +20,33 @@ const basePopoverStyles = {
   width: popoverWidth,
   backgroundColor: '#FFF',
   boxShadow: '0 0 3px rgba(0,0,0,.5)'
+};
+
+const getScrollableAncestor = target => {
+
+    if (target.classList && target.classList.contains('scrollable')) {
+        return target;
+    } else if (!target) {
+        return undefined;
+    }
+
+    return getScrollableAncestor(target.parentNode);
+};
+
+const getPosRelativeToAncestor = (target, ancestor, pos = {top: target.offsetTop, left: target.offsetLeft}) => {
+
+  const {parentNode} = target;
+
+  if (parentNode === ancestor) {
+    return pos;
+  }
+
+  if (parentNode.style.position === 'relative' || parentNode.style.position === 'absolute') {
+    pos.top += parentNode.offsetTop;
+    pos.left += parentNode.offsetLeft;
+  }
+
+  return getPosRelativeToAncestor(parentNode, ancestor, pos);
 };
 
 const getPopoverPos = targetBounds => {
@@ -42,10 +70,10 @@ const getPopoverPos = targetBounds => {
 
 const isInView = (target, scrollableAncestor) => {
 
-  // TODO: Fix this depending on scrollableAncestor being the closest positioned relative/absolute parent
+  const targetPos = getPosRelativeToAncestor(target, scrollableAncestor);
   const targetBounds = {
-    top: target.offsetTop,
-    bottom: target.offsetTop + target.offsetHeight
+    top: targetPos.top,
+    bottom: targetPos.top + target.offsetHeight
   };
 
   // TODO: Left/right (horizontal scrolling)
@@ -82,12 +110,9 @@ class PopoverButton extends React.Component {
 
   initialiseButton(ref) {
     this.button = ref;
-    // TODO: Find closest scrollable, not just parent
-    if (ref.parentNode.classList.contains('scrollable')) {
-      this.scrollableAncestor = ref.parentNode;
-      this.windowResizeListener = window.addEventListener('resize', this.positionPopover);
-      this.scrollListener = this.scrollableAncestor.addEventListener('scroll', this.positionPopover);
-    }
+    this.scrollableAncestor = getScrollableAncestor(ref.parentNode);
+    this.windowResizeListener = window.addEventListener('resize', this.positionPopover);
+    this.scrollListener = this.scrollableAncestor.addEventListener('scroll', this.positionPopover);
   }
 
   togglePopover() {

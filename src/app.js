@@ -11,7 +11,9 @@ class App extends React.Component {
     return (
       <div className="wrapper">
         <Scrollable className="left-sidebar">
-          <PopoverButton />
+          <div style={{position: 'relative'}}>
+            <PopoverButton />
+          </div>
           <PopoverButton />
           <PopoverButton />
         </Scrollable>
