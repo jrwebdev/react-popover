@@ -21,6 +21,7 @@ const getScrollableAncestor = target => {
     return getScrollableAncestor(target.parentNode);
 };
 
+// TODO: Optimise this so all the relative-positioned DOM elements are cached
 const getPosRelativeToAncestor = (target, ancestor, pos = {top: target.offsetTop, left: target.offsetLeft}) => {
 
   const {parentNode} = target;
@@ -29,7 +30,8 @@ const getPosRelativeToAncestor = (target, ancestor, pos = {top: target.offsetTop
     return pos;
   }
 
-  if (parentNode.style.position === 'relative' || parentNode.style.position === 'absolute') {
+  const parentNodePosition = window.getComputedStyle(parentNode).getPropertyValue('position');
+  if (parentNodePosition === 'relative' || parentNodePosition === 'absolute') {
     pos.top += parentNode.offsetTop;
     pos.left += parentNode.offsetLeft;
   }

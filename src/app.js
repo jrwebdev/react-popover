@@ -26,6 +26,11 @@ class App extends React.Component {
               <div style={{padding: 25}}>Popover positioned within a relative positioned div</div>
             </Popover>
           </div>
+          <div style={{marginBottom: 400}} className="relative-position">
+            <Popover anchor={<button>Toggle Popover</button>}>
+              <div style={{padding: 25}}>Popover positioned within a relative positioned div (via CSS class)</div>
+            </Popover>
+          </div>
         </Scrollable>
         <Scrollable className="main">
 
