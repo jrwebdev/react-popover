@@ -1,3 +1,9 @@
+// TODO: Allow scrollable selector to be passed in
+// TODO: Bind element reposition/resize
+// TODO: Bind close on click off popover
+// TODO: Horizontal scrolling
+// TODO: Scrolling within scrolling
+
 import React from 'react';
 import Portal from 'react-portal';
 
@@ -74,9 +80,6 @@ const isInView = (anchor, scrollableAncestor) => {
 
   return anchorBounds.bottom > scrollBounds.top && anchorBounds.top < scrollBounds.bottom;
 };
-
-// TODO: Bind element reposition/resize
-// TODO: Bind close on click off popover
 
 class Popover extends React.Component {
 
