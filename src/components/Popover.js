@@ -17,16 +17,14 @@ const basePopoverStyles = {
   boxShadow: '0 0 3px rgba(0,0,0,.5)'
 };
 
-const getScrollableAncestor = target => {
+// TODO: Fix this to check overflow-y and CSS styles
+// TODO: Allow scrollable selector to be passed in
+const isScrollable = target => (
+    target.classList && target.classList.contains('scrollable') ||
+    target === document.body
+);
 
-    if (target.classList && target.classList.contains('scrollable')) {
-        return target;
-    } else if (!target) {
-        return undefined;
-    }
-
-    return getScrollableAncestor(target.parentNode);
-};
+const getScrollableAncestor = target => isScrollable(target) ? target : getScrollableAncestor(target.parentNode);
 
 // TODO: Optimise this so all the relative-positioned DOM elements are cached
 const getPosRelativeToAncestor = (target, ancestor, pos = {top: target.offsetTop, left: target.offsetLeft}) => {
@@ -55,6 +53,7 @@ const getPopoverPos = (anchor, popover) => {
   const viewportHeight = window.innerHeight;
   const viewportWidth = window.innerWidth;
 
+  // TODO: Take popover height into consideration (e.g. do not display above if it is higher than the available space)
   const spaceAbove = anchorBounds.top;
   const spaceBelow = viewportHeight - anchorBounds.bottom;
   const spaceLeft = anchorBounds.left;
