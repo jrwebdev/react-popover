@@ -17,11 +17,18 @@ const basePopoverStyles = {
   boxShadow: '0 0 3px rgba(0,0,0,.5)'
 };
 
-// TODO: Fix this to check overflow-y and CSS styles
+const hasNativeScroll = target => {
+  const styles = window.getComputedStyle(target);
+  const overflow = styles.getPropertyValue('overflow');
+  const overflowY = styles.getPropertyValue('overflow-y');
+  return [overflow, overflowY].some(prop => prop === 'auto' || prop === 'scroll');
+};
+
 // TODO: Allow scrollable selector to be passed in
 const isScrollable = target => (
-    target.classList && target.classList.contains('scrollable') ||
-    target === document.body
+  target.classList && target.classList.contains('scrollable') ||
+  hasNativeScroll(target) ||
+  target === document.body
 );
 
 const getScrollableAncestor = target => isScrollable(target) ? target : getScrollableAncestor(target.parentNode);
@@ -148,7 +155,8 @@ class Popover extends React.Component {
               ...basePopoverStyles,
               top: this.state.popoverTop,
               left: this.state.popoverLeft,
-              visibility: this.state.isInView ? 'visible' : 'hidden'
+              visibility: this.state.isInView ? 'visible' : 'hidden',
+              opacity: this.state.isInView ? 1 : 0
             }}
           >
             {this.props.children}
