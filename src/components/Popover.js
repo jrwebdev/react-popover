@@ -3,6 +3,7 @@
 // TODO: Bind close on click off popover
 // TODO: Horizontal scrolling
 // TODO: Scrolling within scrolling
+// TODO: Allow scrolling to work when over popover
 
 import React from 'react';
 import Portal from 'react-portal';
@@ -45,7 +46,11 @@ const getPosRelativeToAncestor = (target, ancestor, pos = {top: target.offsetTop
   return getPosRelativeToAncestor(parentNode, ancestor, pos);
 };
 
-const getPopoverPos = (anchorBounds, popoverHeight, popoverWidth) => {
+const getPopoverPos = (anchor, popover) => {
+
+  const anchorBounds = anchor.getBoundingClientRect();
+  const popoverHeight = popover.offsetHeight;
+  const popoverWidth = popover.offsetWidth;
 
   const viewportHeight = window.innerHeight;
   const viewportWidth = window.innerWidth;
@@ -124,8 +129,7 @@ class Popover extends React.Component {
 
   positionPopover() {
     if (this.state.isOpen) {
-      const anchorBounds = this.anchor.getBoundingClientRect();
-      const popoverPos = getPopoverPos(anchorBounds, this.popover.offsetHeight, this.popover.offsetWidth);
+      const popoverPos = getPopoverPos(this.anchor, this.popover);
       this.setState({
         isInView: isInView(this.anchor, this.scrollableAncestor),
         popoverTop: popoverPos.top,
