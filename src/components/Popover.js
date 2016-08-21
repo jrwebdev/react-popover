@@ -1,6 +1,5 @@
 // TODO: Allow scrollable selector to be passed in
 // TODO: Bind element reposition/resize
-// TODO: Bind close on click off popover
 // TODO: Horizontal scrolling
 // TODO: Scrolling within scrolling
 // TODO: Allow scrolling to work when over popover
@@ -60,14 +59,13 @@ const getPopoverPos = (anchor, popover) => {
   const viewportHeight = window.innerHeight;
   const viewportWidth = window.innerWidth;
 
-  // TODO: Take popover height into consideration (e.g. do not display above if it is higher than the available space)
   const spaceAbove = anchorBounds.top;
   const spaceBelow = viewportHeight - anchorBounds.bottom;
   const spaceLeft = anchorBounds.left;
   const spaceRight = viewportWidth - anchorBounds.right;
 
-  const top = spaceAbove > spaceBelow ? anchorBounds.top - popoverHeight : anchorBounds.bottom;
-  const left = spaceLeft > spaceRight ? anchorBounds.right - popoverWidth : anchorBounds.left;
+  const top = spaceAbove > spaceBelow && spaceAbove >= popoverHeight ? anchorBounds.top - popoverHeight : anchorBounds.bottom;
+  const left = spaceLeft > spaceRight && spaceLeft >= popoverWidth ? anchorBounds.right - popoverWidth : anchorBounds.left;
 
   return {
     top,
@@ -104,13 +102,15 @@ class Popover extends React.Component {
     this.setPopover = this.setPopover.bind(this);
     this.togglePopover = this.togglePopover.bind(this);
     this.positionPopover = this.positionPopover.bind(this);
+    this.clickOffHandler = this.clickOffHandler.bind(this);
   }
 
   componentWillUnmount() {
     if (this.scrollableAncestor && this.scrollListener) {
-      this.scrollableAncestor.removeEventListener(this.scrollListener);
+      this.scrollableAncestor.removeEventListener('scroll', this.scrollListener);
     }
-    window.removeEventListener(this.windowResizeListener);
+    window.removeEventListener('resize', this.windowResizeListener);
+    window.removeEventListener('click', this.clickOffListener);
   }
 
   initialise(ref) {
@@ -118,10 +118,17 @@ class Popover extends React.Component {
     this.scrollableAncestor = getScrollableAncestor(ref.parentNode);
     this.windowResizeListener = window.addEventListener('resize', this.positionPopover);
     this.scrollListener = this.scrollableAncestor.addEventListener('scroll', this.positionPopover);
+    this.clickOffListener = window.addEventListener('click', this.clickOffHandler);
   }
 
   setPopover(ref) {
     this.popover = ref;
+  }
+
+  clickOffHandler({target}) {
+    if (this.state.isOpen && !this.anchor.contains(target) && !this.popover.contains(target)) {
+      this.setState({isOpen: false});
+    }
   }
 
   togglePopover() {
