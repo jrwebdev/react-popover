@@ -51,7 +51,6 @@ const getPosRelativeToAncestor = (target, ancestor, pos = {top: target.offsetTop
 };
 
 const getPopoverPos = (anchor, popover) => {
-
   const anchorBounds = anchor.getBoundingClientRect();
   const popoverHeight = popover.offsetHeight;
   const popoverWidth = popover.offsetWidth;
@@ -73,7 +72,32 @@ const getPopoverPos = (anchor, popover) => {
   }
 };
 
-const isInView = (anchor, scrollableAncestor) => {
+// http://stackoverflow.com/a/15203639
+function isElementVisible(el) {
+    var rect     = el.getBoundingClientRect(),
+        vWidth   = window.innerWidth || doc.documentElement.clientWidth,
+        vHeight  = window.innerHeight || doc.documentElement.clientHeight,
+        efp      = function (x, y) { return document.elementFromPoint(x, y) };
+
+    // Return false if it's not in the viewport
+    if (rect.right < 0 || rect.bottom < 0
+            || rect.left > vWidth || rect.top > vHeight)
+        return false;
+
+    // Return true if any of its four corners are visible
+    return (
+          el.contains(efp(rect.left,  rect.top))
+      ||  el.contains(efp(rect.right, rect.top))
+      ||  el.contains(efp(rect.right, rect.bottom))
+      ||  el.contains(efp(rect.left,  rect.bottom))
+    );
+}
+
+const isInView = (anchor, scrollableAncestor, parentScrollableAncestor) => {
+
+  return isElementVisible(anchor);
+
+  const scrollPos = getPosRelativeToAncestor(scrollableAncestor, parentScrollableAncestor);
 
   const anchorPos = getPosRelativeToAncestor(anchor, scrollableAncestor);
   const anchorBounds = {
@@ -116,6 +140,13 @@ class Popover extends React.Component {
   initialise(ref) {
     this.anchor = ref;
     this.scrollableAncestor = getScrollableAncestor(ref.parentNode);
+
+    // TODO: Refactor - testing 2 levels of scroll nesting
+    this.parentScrollableAncestor = getScrollableAncestor(this.scrollableAncestor.parentNode);
+    if (this.parentScrollableAncestor) {
+      this.parentScrollableAncestor.addEventListener('scroll', this.positionPopover);
+    }
+
     this.windowResizeListener = window.addEventListener('resize', this.positionPopover);
     this.scrollListener = this.scrollableAncestor.addEventListener('scroll', this.positionPopover);
     this.clickOffListener = window.addEventListener('click', this.clickOffHandler);
@@ -144,7 +175,7 @@ class Popover extends React.Component {
     if (this.state.isOpen) {
       const popoverPos = getPopoverPos(this.anchor, this.popover);
       this.setState({
-        isInView: isInView(this.anchor, this.scrollableAncestor),
+        isInView: isInView(this.anchor, this.scrollableAncestor, this.parentScrollableAncestor),
         popoverTop: popoverPos.top,
         popoverLeft: popoverPos.left
       });

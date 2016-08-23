@@ -22,7 +22,16 @@ body {
 }
 
 .main {
+  box-sizing: border-box;
   flex: 1;
+  padding: 0 50px;
+}
+
+.main-inner {
+  box-sizing: border-box;
+  padding: 300px 25px;
+  background-color: #F7F7F7;
+  height: 300px;
 }
 
 .left-sidebar,

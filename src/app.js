@@ -33,7 +33,15 @@ class App extends React.Component {
           </div>
         </Scrollable>
         <Scrollable className="main">
-
+          <div style={{marginBottom: 1000}}>
+            <Scrollable className="main-inner">
+              <div style={{marginBottom: 1000}}>
+                <Popover anchor={<button>Toggle Popover</button>}>
+                  <div style={{padding: 25}}>Popover within two scrollable containers</div>
+                </Popover>
+              </div>
+            </Scrollable>
+          </div>
         </Scrollable>
         <Scrollable className="right-sidebar">
           <div style={{marginBottom: 2000, textAlign: 'right'}}>
