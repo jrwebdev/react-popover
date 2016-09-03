@@ -118,7 +118,7 @@ class Popover extends React.Component {
     this.scrollableAncestor = getScrollableAncestor(ref.parentNode);
     this.windowResizeListener = window.addEventListener('resize', this.positionPopover);
     this.scrollListener = this.scrollableAncestor.addEventListener('scroll', this.positionPopover);
-    this.clickOffListener = window.addEventListener('click', this.clickOffHandler);
+    this.clickOffListener = window.addEventListener('click', this.clickOffHandler, true);
   }
 
   setPopover(ref) {
